@@ -3,14 +3,14 @@ using Grpc.Core;
 using JwtValidator;
 using System.IdentityModel.Tokens.Jwt;
 
-public sealed class AuthenticationCommandHelper
+public sealed class AuthenticationCommandHandler
 {
     private readonly IKeyProvider _keyProvider;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IIpResolver _ipResolver;
     private readonly IJwtValidator _jwtValidator;
 
-    public AuthenticationCommandHelper(IKeyProvider keyProvider, IJwtTokenGenerator jwtTokenGenerator, IIpResolver ipResolver, IJwtValidator jwtValidator)
+    public AuthenticationCommandHandler(IKeyProvider keyProvider, IJwtTokenGenerator jwtTokenGenerator, IIpResolver ipResolver, IJwtValidator jwtValidator)
     {
         _keyProvider = keyProvider;
         _jwtTokenGenerator = jwtTokenGenerator;

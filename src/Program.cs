@@ -20,8 +20,8 @@ public static class Program
 
         builder.Services.AddGrpc().AddJsonTranscoding();
 
-        builder.Services.AddScoped<AuthenticationCommandHelper>();
-        builder.Services.AddScoped<KeyAccessPointCommandHelper>();
+        builder.Services.AddScoped<AuthenticationCommandHandler>();
+        builder.Services.AddScoped<KeyAccessPointCommandHandler>();
         builder.Services.AddScoped<IIpResolver, IpResolver>();
         builder.Services.AddScoped<IJwtValidator, JwtValidator.JwtValidator>();
         builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();

@@ -13,7 +13,7 @@ public class KeyProvider : IKeyProvider
 
         if (signingCredentials == null || publicRsaSecurityKey == null || publicRsaSecurityKeyString == null)
         {
-            throw new Exception("Keys generator fail.", new InvalidOperationException());
+            throw new Exception("Key generator fail", new InvalidOperationException());
         }
     }
 
