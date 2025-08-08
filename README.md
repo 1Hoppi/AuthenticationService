@@ -14,7 +14,7 @@ dotnet build
 ```
 ## Issues
 
-At start or after making changed to the project (especially to .proto files), you might need to go through some dependency updating sequences.
+At start or after making changes to the project (especially to .proto files), you might need to go through some dependency updating sequences.
 Try using one of these commands:
 
 ```bash
