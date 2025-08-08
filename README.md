@@ -3,6 +3,7 @@
 This repository contains a C# .NET web application that's responsible for easy and memory-friendly authentication. JWT Tokens that're partly stored as blacklist in Redis. It supports the most important endpoints:
 ### Login - Register - Refresh - Logout - LogoutAll
 
+
 ## Building the Project
 
 Pay close attention to the installed libraries. Personal NuGet libs are presented meaning there's a change of not being compatible (so far I haven't met any issues on win11 and LTS Ubuntu 22-24)
