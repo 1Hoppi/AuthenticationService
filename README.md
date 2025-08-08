@@ -1,7 +1,7 @@
 # Authentication microservice
 
 This repository contains a C# .NET web application that's responsible for easy and memory-friendly authentication. JWT Tokens that're partly stored as blacklist in Redis. It supports the most important endpoints:
-# Login - Register - Refresh - Logout - LogoutAll
+### Login - Register - Refresh - Logout - LogoutAll
 
 ## Building the Project
 
