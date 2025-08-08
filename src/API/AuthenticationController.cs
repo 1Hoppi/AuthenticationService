@@ -2,22 +2,37 @@ using Authenticator;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 
-public class AuthenticationController : Authentication.AuthenticationBase
+public class AuthenticationController : AuthenticationService.AuthenticationServiceBase
 {
-    private readonly AuthenticationCommandHelper _commandHelper;
+    private readonly AuthenticationCommandHandler _commandHandler;
 
-    public AuthenticationController(AuthenticationCommandHelper commandHelper)
+    public AuthenticationController(AuthenticationCommandHandler commandHandlper)
     {
-        _commandHelper = commandHelper;
+        _commandHandler = commandHandlper;
+    }
+
+    public override async Task<Empty> Register(RegisterData request, ServerCallContext context)
+    {
+        return await _commandHandler.Register(request, context);
     }
 
     public override async Task<TokenSet> Login(LoginData request, ServerCallContext context)
     {
-        return await _commandHelper.Login(request, context);
+        return await _commandHandler.Login(request, context);
     }
 
-    public override async Task<TokenSet> RefreshToken(RefreshTokenData request, ServerCallContext context)
+    public override async Task<TokenSet> Refresh(RefreshData request, ServerCallContext context)
     {
-        return await _commandHelper.RefreshToken(request, context);
+        return await _commandHandler.RefreshToken(request, context);
+    }
+
+    public override async Task<Empty> Logout(LogoutData request, ServerCallContext context)
+    {
+        return await _commandHandler.Logout(request, context);
+    }
+
+    public override async Task<Empty> LogoutAll(LogoutAllData request, ServerCallContext context)
+    {
+        return await _commandHandler.LogoutAll(request, context);
     }
 }

@@ -14,13 +14,21 @@
     <PackageReference Include="Google.Protobuf" Version="3.29.0" />
     <PackageReference Include="Grpc.Tools" Version="2.62.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
-    <PackageReference Include="1Hoppi.Protos.Messenger" Version="*" />
-    <PackageReference Include="1Hoppi.JwtValidator" Version="*" />
+    <PackageReference Include="Npgsql" Version="9.0.3" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.58 " />
+    <!-- <PackageReference Include="1Hoppi.PgSqlRepository" Version="*" /> -->
+    <PackageReference Include="1Hoppi.RedisRepository" Version="1.0.1" />
+    <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.4" />
+
+    <!-- Isn't really working -->
+    <!-- <Protobuf 
+      Include="\authentication.proto"
+      GrpcServices="Both" /> -->
   </ItemGroup>
   
   <ItemGroup>
     <Protobuf 
-      Include="$(NuGetPackageRoot)1hoppi.protos.messenger\**\authentication.proto"
+      Include="$(NuGetPackageRoot)1Hoppi.protos.messenger\**\authentication.proto"
       GrpcServices="Both" />
   </ItemGroup>
 

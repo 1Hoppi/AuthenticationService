@@ -1,30 +1,28 @@
-using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 public class KeyProvider : IKeyProvider
 {
-    private RsaSecurityKey? publicRsaSecurityKey = null;
-    private string? publicRsaSecurityKeyString = null;
-    private SigningCredentials? signingCredentials = null;
+    private readonly string _jwtPrivateKey;
+    private SigningCredentials signingCredentials = null!;
+    private SymmetricSecurityKey hmacKey = null!;
 
-    public KeyProvider()
+    public KeyProvider(IOptions<SecuritySettings> options)
     {
+        _jwtPrivateKey = options.Value.JwtPrivateKey;
+
         GenerateKeys();
 
-        if (signingCredentials == null || publicRsaSecurityKey == null || publicRsaSecurityKeyString == null)
+        if (signingCredentials == null || hmacKey == null)
         {
             throw new Exception("Key generator fail", new InvalidOperationException());
         }
     }
 
-    public RsaSecurityKey GetPublicRsaSecurityKey()
+    public SymmetricSecurityKey GetSecurityKey()
     {
-        return publicRsaSecurityKey!;
-    }
-
-    public string GetPublicRsaSecurityKeyString()
-    {
-        return publicRsaSecurityKeyString!;
+        return hmacKey;
     }
 
     public SigningCredentials GetSigningCredentials()
@@ -36,18 +34,16 @@ public class KeyProvider : IKeyProvider
     {
         try
         {
-            using var rsa = RSA.Create();
-            rsa.ImportFromPem(File.ReadAllText("/secrets/private-key.pem"));
+            var keyBytes = Encoding.UTF8.GetBytes(_jwtPrivateKey);
 
-            var privateKey = new RsaSecurityKey(rsa.ExportParameters(true));
+            hmacKey = new SymmetricSecurityKey(keyBytes);
 
-            publicRsaSecurityKey = new RsaSecurityKey(rsa.ExportParameters(false));
-            signingCredentials = new SigningCredentials(privateKey, SecurityAlgorithms.RsaSha256);
-            publicRsaSecurityKeyString = rsa.ExportSubjectPublicKeyInfoPem();
+            signingCredentials = new SigningCredentials(hmacKey, SecurityAlgorithms.HmacSha256);
         }
         catch (Exception ex)
         {
-            throw new Exception("Couldn't generate keys", ex);
+            throw new Exception("Couldn't generate symmetric " +
+                "secutiry keys or signing credentials", ex);
         }
     }
 }

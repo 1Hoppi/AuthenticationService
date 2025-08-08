@@ -2,16 +2,28 @@ using Grpc.Core;
 
 public class IpResolver : IIpResolver
 {
-    public Task<string> GetIpFromContext(ServerCallContext context)
+    public string GetIp(ServerCallContext context)
     {
-        var peer = context.Peer;
-        var ip = peer.Split(':')[1];
+        var httpContext = context.GetHttpContext();
 
-        if (ip.StartsWith("[") && ip.EndsWith("]"))
-        {
-            ip = ip[1..^1];
-        }
+        var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+        var remoteIp = httpContext.Connection.RemoteIpAddress?.ToString();
 
-        return Task.FromResult(ip);
+        var ip = !string.IsNullOrEmpty(forwardedFor)
+            ? forwardedFor.Split(',')[0].Trim()
+            : remoteIp;
+
+        return ip ?? "unknown";
+    }
+
+    public string GetIpBehindProxy(ServerCallContext context)
+    {
+        var httpContext = context.GetHttpContext();
+
+        var forwardedFor = httpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+
+        var ip = !string.IsNullOrEmpty(forwardedFor) ? forwardedFor.Split(',')[0].Trim() : "unknown";
+
+        return ip ?? "unknown";
     }
 }

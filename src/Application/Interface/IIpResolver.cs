@@ -2,5 +2,6 @@ using Grpc.Core;
 
 public interface IIpResolver
 {
-    public Task<string> GetIpFromContext(ServerCallContext context);
+    public string GetIp(ServerCallContext context);
+    public string GetIpBehindProxy(ServerCallContext context);
 }
