@@ -18,7 +18,7 @@
     <PackageReference Include="StackExchange.Redis" Version="2.8.58 " />
     <!-- <PackageReference Include="1Hoppi.PgSqlRepository" Version="*" /> -->
     <PackageReference Include="1Hoppi.RedisRepository" Version="1.0.1" />
-    <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.4" />
+    <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.5" />
 
     <!-- Isn't really working -->
     <!-- <Protobuf 

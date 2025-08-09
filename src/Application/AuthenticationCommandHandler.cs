@@ -30,7 +30,7 @@ public sealed class AuthenticationCommandHandler
         _redisRepository = redisRepository;
     }
 
-    public async Task<Empty> Register(RegisterData request, ServerCallContext context)
+    public async Task<TokenSet> Register(LoginCredentials request, ServerCallContext context)
     {
         if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
         {
@@ -92,17 +92,17 @@ public sealed class AuthenticationCommandHandler
             }
         }
 
-        // // Create and return JWT keys (Login)
-        // TokenSet tokenSet = await this.Login(new LoginData
-        // {
-        //     Username = request.Username,
-        //     Password = request.Password
-        // }, context);
+        // Create and return JWT keys (Login)
+        TokenSet tokenSet = await this.Login(new LoginCredentials
+        {
+            Username = request.Username,
+            Password = request.Password
+        }, context);
 
-        return new Empty();
+        return tokenSet;
     }
 
-    public async Task<TokenSet> Login(LoginData request, ServerCallContext context)
+    public async Task<TokenSet> Login(LoginCredentials request, ServerCallContext context)
     {
         if (string.IsNullOrEmpty(request.Username) || string.IsNullOrEmpty(request.Password))
         {
@@ -172,7 +172,7 @@ public sealed class AuthenticationCommandHandler
         };
     }
 
-    public async Task<TokenSet> RefreshToken(RefreshData request, ServerCallContext context)
+    public async Task<TokenSet> RefreshToken(TokenSet request, ServerCallContext context)
     {
         if (string.IsNullOrEmpty(request.RefreshToken))
         {
@@ -275,7 +275,7 @@ public sealed class AuthenticationCommandHandler
         };
     }
 
-    public async Task<Empty> Logout(LogoutData request, ServerCallContext context)
+    public async Task<Empty> Logout(TokenSet request, ServerCallContext context)
     {
         _jwtValidator.ValidateToken(request.AccessToken);
         await _jwtValidator.ValidateAccessRevocation(request.AccessToken);
@@ -312,12 +312,12 @@ public sealed class AuthenticationCommandHandler
         return new Empty();
     }
 
-    public async Task<Empty> LogoutAll(LogoutAllData request, ServerCallContext context)
+    public async Task<Empty> LogoutAll(AccessToken request, ServerCallContext context)
     {
-        _jwtValidator.ValidateToken(request.AccessToken);
-        await _jwtValidator.ValidateAccessRevocation(request.AccessToken);
+        _jwtValidator.ValidateToken(request.AccessToken_);
+        await _jwtValidator.ValidateAccessRevocation(request.AccessToken_);
 
-        string accessUserId = JwtValidator.GetClaimValue(request.AccessToken, "sub");
+        string accessUserId = JwtValidator.GetClaimValue(request.AccessToken_, "sub");
 
         try
         {
