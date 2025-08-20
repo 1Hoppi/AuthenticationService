@@ -7,27 +7,28 @@ using Google.Protobuf.WellKnownTypes;
 public sealed class AuthenticationCommandHandler
 {
     private readonly IOptionsMonitor<JwtSettings> _options;
-    private readonly IKeyProvider _keyProvider;
     private readonly IJwtTokenFactory _jwtTokenFactory;
     private readonly IIpResolver _ipResolver;
     private readonly IJwtValidator _jwtValidator;
     private readonly IHasher _hasher;
-    private readonly IPgSqlRepository _pgSqlRepository;
     private readonly IRedisRepository _redisRepository;
+    private readonly IUserCredentialsService _userCredentialsService;
 
     public AuthenticationCommandHandler(IOptionsMonitor<JwtSettings> options,
-        IKeyProvider keyProvider, IJwtTokenFactory jwtTokenFactory,
-        IIpResolver ipResolver, IJwtValidator jwtValidator, IHasher hasher,
-        IPgSqlRepository pgSqlRepository, IRedisRepository redisRepository)
+        IJwtTokenFactory jwtTokenFactory,
+        IIpResolver ipResolver,
+        IJwtValidator jwtValidator,
+        IHasher hasher,
+        IRedisRepository redisRepository,
+        IUserCredentialsService userCredentialsService)
     {
         _options = options;
-        _keyProvider = keyProvider;
         _jwtTokenFactory = jwtTokenFactory;
         _ipResolver = ipResolver;
         _jwtValidator = jwtValidator;
         _hasher = hasher;
-        _pgSqlRepository = pgSqlRepository;
         _redisRepository = redisRepository;
+        _userCredentialsService = userCredentialsService;
     }
 
     public async Task<TokenSet> Register(LoginCredentials request, ServerCallContext context)
@@ -51,18 +52,13 @@ public sealed class AuthenticationCommandHandler
         byte[] hash = hashData.Item1;
         byte[] salt = hashData.Item2;
 
-        // Check if usename is free
+        bool available = await _userCredentialsService.GetUsernameAvailability(request.Username);
+        if (!available)
         {
-            var sql = $"SELECT EXISTS(SELECT 1 FROM user_credentials WHERE username = @value)";
-            var parameter1 = new NpgsqlParameter("value", request.Username);
-            var result = await _pgSqlRepository.ExecuteScalarAsync(sql, parameter1);
-            if (result == null || (bool)result)
-            {
-                throw new RpcException(new Status(StatusCode.AlreadyExists, "This username has already been taken"));
-            }
+            throw new RpcException(new Status(StatusCode.AlreadyExists, "This username has already been taken"));
         }
 
-        // Create user & token data 
+        // Create user id
         var userId = Guid.NewGuid();
 
         // Create a new user
@@ -72,24 +68,11 @@ public sealed class AuthenticationCommandHandler
                 "Couldn't store last token reset data"));
         }
 
+        int affectedRows = await _userCredentialsService.CreateNewUser(
+            userId, request.Username, hash, salt);
+        if (affectedRows == 0)
         {
-            // Postgres
-            var sql = "INSERT INTO user_credentials (user_id, password_hash, password_salt, username) " +
-                "VALUES (@user_id, @hash, @salt, @username)";
-            var parameters = new NpgsqlParameter[]
-            {
-            new NpgsqlParameter("user_id", userId),
-            new NpgsqlParameter("hash", hash),
-            new NpgsqlParameter("salt", salt),
-            new NpgsqlParameter("username", request.Username),
-            };
-
-            int affectedRows = await _pgSqlRepository.ExecuteNonQueryAsync(sql, parameters);
-
-            if (affectedRows == 0)
-            {
-                throw new RpcException(new Status(StatusCode.Internal, "Internal error while writing data"));
-            }
+            throw new RpcException(new Status(StatusCode.Internal, "Internal error while writing data"));
         }
 
         // Create and return JWT keys (Login)
@@ -109,48 +92,28 @@ public sealed class AuthenticationCommandHandler
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Username and password can't be empty"));
         }
 
-        byte[] actualSalt, actualHash;
-        Guid userId;
-
-        {
-            var sql = "SELECT password_hash, password_salt, user_id FROM user_credentials WHERE username = @username";
-            var parameters = new NpgsqlParameter("username", request.Username);
-            using (NpgsqlDataReader reader = await _pgSqlRepository.ExecuteReaderAsync(sql, parameters))
-            {
-                if (!reader.HasRows)
-                {
-                    throw new RpcException(new Status(StatusCode.Unauthenticated, "Wrong username or password"));
-                }
-
-                try
-                {
-                    reader.Read();
-                    actualHash = reader.GetFieldValue<byte[]>(reader.GetOrdinal("password_hash"));
-                    actualSalt = reader.GetFieldValue<byte[]>(reader.GetOrdinal("password_salt"));
-                    userId = reader.GetFieldValue<Guid>(reader.GetOrdinal("user_id"));
-                }
-                catch (Exception)
-                {
-                    throw new RpcException(new Status(StatusCode.Internal, "Internal error while reading data"));
-                }
-            }
-        }
-
-        if (actualHash == null || actualSalt == null)
-        {
-            throw new RpcException(new Status(StatusCode.Internal,
-                "Internal error while reading data"));
-        }
-
-        byte[] currentHash = _hasher.HashPassword(request.Password, actualSalt).Item1;
-
-        if (!actualHash.SequenceEqual(currentHash))
+        UserCredentials? credentials = await _userCredentialsService.GetCredentialsByUsernameAsync(request.Username);
+        if (credentials == null)
         {
             throw new RpcException(new Status(StatusCode.Unauthenticated,
                 "Wrong username or password"));
         }
 
-        string userIdString = userId.ToString();
+        if (credentials.PasswordHash == null || credentials.PasswordSalt == null)
+        {
+            throw new RpcException(new Status(StatusCode.Internal,
+                "Internal error while reading data"));
+        }
+
+        byte[] currentHash = _hasher.HashPassword(request.Password, credentials.PasswordSalt).Item1;
+
+        if (!credentials.PasswordHash.SequenceEqual(currentHash))
+        {
+            throw new RpcException(new Status(StatusCode.Unauthenticated,
+                "Wrong username or password"));
+        }
+
+        string userIdString = credentials.UserId.ToString();
         string ipAddress = _ipResolver.GetIpBehindProxy(context);
 
         var accessToken = _jwtTokenFactory.NewAccessToken(userIdString, ipAddress);

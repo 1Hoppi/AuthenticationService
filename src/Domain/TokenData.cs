@@ -2,13 +2,13 @@ using Microsoft.IdentityModel.Tokens;
 
 public class TokenData
 {
-    public string Token { get; private set; } = null!;
-    public string TokenId { get; private set; } = null!;
-    public string UserId { get; private set; } = null!;
-    public string IpAddress { get; private set; } = null!;
+    public string Token { get; private set; } = string.Empty;
+    public string TokenId { get; private set; } = string.Empty;
+    public string UserId { get; private set; } = string.Empty;
+    public string IpAddress { get; private set; } = string.Empty;
     public DateTime ExpiresAt { get; private set; }
     public DateTime IssuedAt { get; private set; }
-    public string Audience { get; private set; } = null!;
+    public string Audience { get; private set; } = string.Empty;
     public SigningCredentials SigningCredentials { get; private set; } = null!;
 
     public TokenData WithToken(string token)

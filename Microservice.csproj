@@ -16,6 +16,9 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="StackExchange.Redis" Version="2.8.58 " />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.8" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <!-- <PackageReference Include="1Hoppi.PgSqlRepository" Version="*" /> -->
     <PackageReference Include="1Hoppi.RedisRepository" Version="1.0.1" />
     <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.5" />

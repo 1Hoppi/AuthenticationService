@@ -4,13 +4,13 @@ using System.Net;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.EntityFrameworkCore;
 
 public static class Program
 {
     public static void Main(string[] args)
     {
         // This is vital as JwtSecurityTokenHandler changes claim types,
-        // for example sub -> NameClaimType
         JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
         var builder = WebApplication.CreateBuilder(args);
@@ -98,11 +98,9 @@ public static class Program
         });
 
         // Postgres
-        builder.Services.AddScoped<IPgSqlRepository, PgSqlRepository>(provider =>
-        {
-            var connectionString = securitySettings.PgSqlConnectionString;
-            return new PgSqlRepository(connectionString);
-        });
+        builder.Services.AddScoped<IUserCredentialsService, UserCredentialsService>();
+        builder.Services.AddDbContext<PgSqlDbContext>(options =>
+            options.UseNpgsql(securitySettings.PgSqlConnectionString));
 
         var app = builder.Build();
 
