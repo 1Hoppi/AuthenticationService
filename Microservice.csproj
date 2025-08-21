@@ -21,7 +21,7 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     <!-- <PackageReference Include="1Hoppi.PgSqlRepository" Version="*" /> -->
     <PackageReference Include="1Hoppi.RedisRepository" Version="1.0.1" />
-    <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.5" />
+    <PackageReference Include="1Hoppi.Protos.Messenger" Version="1.0.8" />
 
     <!-- Isn't really working -->
     <!-- <Protobuf 

@@ -49,7 +49,11 @@ public static class Program
         builder.Services.AddGrpc().AddJsonTranscoding();
 
         // Request handling & processing
-        builder.Services.AddScoped<AuthenticationCommandHandler>();
+        builder.Services.AddScoped<LoginCommandHandler>();
+        builder.Services.AddScoped<RegisterCommandHandler>();
+        builder.Services.AddScoped<LogoutCommandHandler>();
+        builder.Services.AddScoped<RefreshCommandHandler>();
+        builder.Services.AddScoped<ValidateCommandHandler>();
         builder.Services.AddScoped<IIpResolver, IpResolver>();
         builder.Services.AddScoped<IHasher, Hasher>();
 

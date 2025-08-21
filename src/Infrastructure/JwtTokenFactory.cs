@@ -16,27 +16,31 @@ public class JwtTokenFactory : IJwtTokenFactory
     public TokenData NewAccessToken(string userId, string ipAddress)
     {
         return CreateToken(new TokenData()
-            .WithTokenId(Guid.NewGuid().ToString())
-            .WithUserId(userId)
-            .WithIpAddress(ipAddress)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(
-                _options.CurrentValue.AccessTokenMinutesToExist))
-            .WithIssuedAt(DateTime.UtcNow)
-            .WithAudience(_options.CurrentValue.AccessAudience)
-            .WithSigningCredentials(_keyProvider.GetSigningCredentials()));
+        {
+            TokenId = Guid.NewGuid().ToString(),
+            UserId = userId,
+            IpAddress = ipAddress,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(
+                _options.CurrentValue.AccessTokenMinutesToExist),
+            IssuedAt = DateTime.UtcNow,
+            Audience = _options.CurrentValue.AccessAudience,
+            SigningCredentials = _keyProvider.GetSigningCredentials()
+        });
     }
 
     public TokenData NewRefreshToken(string userId, string ipAddress)
     {
-        return CreateToken(new TokenData()
-            .WithTokenId(Guid.NewGuid().ToString())
-            .WithUserId(userId)
-            .WithIpAddress(ipAddress)
-            .WithExpiresAt(DateTime.UtcNow.AddMinutes(
-                _options.CurrentValue.RefreshTokenMinutesToExist))
-            .WithIssuedAt(DateTime.UtcNow)
-            .WithAudience(_options.CurrentValue.RefreshAudience)
-            .WithSigningCredentials(_keyProvider.GetSigningCredentials()));
+        return CreateToken(new TokenData
+        {
+            TokenId = Guid.NewGuid().ToString(),
+            UserId = userId,
+            IpAddress = ipAddress,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(
+                _options.CurrentValue.RefreshTokenMinutesToExist),
+            IssuedAt = DateTime.UtcNow,
+            Audience = _options.CurrentValue.RefreshAudience,
+            SigningCredentials = _keyProvider.GetSigningCredentials()
+        });
     }
 
     public TokenData CreateToken(TokenData tokenData)
@@ -58,7 +62,7 @@ public class JwtTokenFactory : IJwtTokenFactory
             signingCredentials: tokenData.SigningCredentials
         );
 
-        tokenData.WithToken(new JwtSecurityTokenHandler().WriteToken(token));
+        tokenData.Token = new JwtSecurityTokenHandler().WriteToken(token);
 
         return tokenData;
     }

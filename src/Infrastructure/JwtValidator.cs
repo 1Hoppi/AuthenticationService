@@ -66,7 +66,7 @@ public class JwtValidator : IJwtValidator
         }
     }
 
-    public void ValidateToken(string token)
+    public void ValidateToken(string token, string audience = "")
     {
         if (string.IsNullOrWhiteSpace(token))
             throw new RpcException(new Status(StatusCode.InvalidArgument,
@@ -76,11 +76,22 @@ public class JwtValidator : IJwtValidator
         {
             _tokenHandler.ValidateToken(token, _validationParameters, out var validatedToken);
 
-            if (!(validatedToken is JwtSecurityToken jwt) ||
-                !_validationParameters.ValidAlgorithms.Contains(jwt.Header.Alg))
             {
-                throw new RpcException(new Status(StatusCode.InvalidArgument,
-                    "Invalid token alg"));
+                if (!(validatedToken is JwtSecurityToken jwt) ||
+                    !_validationParameters.ValidAlgorithms.Contains(jwt.Header.Alg))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument,
+                        "Invalid token alg"));
+                }
+            }
+
+            {
+                if (!(validatedToken is JwtSecurityToken jwt) ||
+                    !jwt.Audiences.Contains(audience))
+                {
+                    throw new RpcException(new Status(StatusCode.InvalidArgument,
+                        "Invalid audience"));
+                }
             }
 
             return;
